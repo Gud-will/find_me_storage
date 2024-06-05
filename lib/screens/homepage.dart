@@ -1,3 +1,7 @@
+import 'package:find_me_storage/screens/widgets/itemcontainercard.dart';
+import 'package:find_me_storage/screens/widgets/additemdialog.dart';
+import 'package:find_me_storage/screens/widgets/drawer.dart';
+import 'package:find_me_storage/screens/widgets/searchbar.dart';
 import 'package:find_me_storage/utils/const.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,28 +10,53 @@ import '../providers/database_provider.dart';
 import '../providers/theme_provider.dart';
 
 class MyHomePage extends StatefulWidget {
-   final ItemContainerRepository itemContainerRepository;
+  final ItemContainerRepository itemContainerRepository;
 
-  MyHomePage({required this.itemContainerRepository});
+  const MyHomePage({super.key, required this.itemContainerRepository});
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   late Future<List<ItemContainer>> _rootContainers;
+  Future<void> _addSampleData() async {
+    final bigBox = ItemContainer()
+      ..name = 'Big Box'
+      ..description = 'A big box'
+      ..path = 'Big Box';
+    await widget.itemContainerRepository.addItemContainer(bigBox);
+
+    final smallBox = ItemContainer()
+      ..name = 'Small Box'
+      ..description = 'A small box'
+      ..parentLink.value=bigBox
+      ..path = 'Big Box/Small Box';
+    await widget.itemContainerRepository.addItemContainer(smallBox,hasparent: true,parentid: bigBox.id);
+
+    final spidermanKeychain = Item()
+      ..name = 'Spiderman Keychain'
+      ..description = 'A Spiderman keychain'
+      ..parentLink.value=smallBox
+      ..path = 'Big Box/Small Box/Spiderman Keychain';
+    await widget.itemContainerRepository
+        .addItemToContainer(smallBox.id, spidermanKeychain);
+
+    setState(() {
+      _rootContainers = widget.itemContainerRepository.getRootContainers();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    _rootContainers = widget.itemContainerRepository.getRootContainers()
-        as Future<List<ItemContainer>>;
+    _rootContainers = widget.itemContainerRepository.getRootContainers();
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      drawer: Drawer(),
+      drawer: MyDrawer(),
       body: Padding(
         padding: appPadding,
         child: Column(
@@ -53,13 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 }),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 5,
-                vertical: 2,
-              ),
-              child: SearchBar(),
-            ),
+            MySearchBar(),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -78,28 +101,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         itemCount: containers.length,
                         itemBuilder: (context, index) {
                           final cont = containers[index];
-                          return ListTile(
-                            onTap: () {},
-                            title: Row(
-                              children: [
-                                const Text("Hall"),
-                                Text.rich(
-                                  TextSpan(
-                                    style: Theme.of(context)
-                                        .listTileTheme
-                                        .subtitleTextStyle,
-                                    children: const [
-                                      TextSpan(text: "C: 1"),
-                                      TextSpan(text: "I:  10")
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: const Text(
-                              "descp",
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          return ItemContainerCard(
+                            itemContainer: cont,
                           );
                         },
                       );
@@ -113,7 +116,21 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to Add Container Screen
+          _addSampleData();
+          // showModalBottomSheet(
+          //   context: context,
+          //   builder: (BuildContext context) {
+          //     return SlidingDialogBox(
+          //       itemContainerRepository: widget.itemContainerRepository,
+          //       parentitemcontainer: ItemContainer(),
+          //       path: "",
+          //     );
+          //   },
+          // );
+          // setState(() {
+          //   _rootContainers =
+          //       widget.itemContainerRepository.getRootContainers();
+          // });
         },
         child: Icon(Icons.add),
       ),

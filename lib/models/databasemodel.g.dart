@@ -47,18 +47,16 @@ const ItemContainerSchema = CollectionSchema(
       single: true,
     ),
     r'subContainers': LinkSchema(
-      id: -8050031517061589792,
+      id: 7185465949353445562,
       name: r'subContainers',
       target: r'ItemContainer',
       single: false,
-      linkName: r'parentLink',
     ),
     r'items': LinkSchema(
-      id: -5518520053627099716,
+      id: -72976997483635435,
       name: r'items',
       target: r'Item',
       single: false,
-      linkName: r'containerLink',
     )
   },
   embeddedSchemas: {},
@@ -74,12 +72,7 @@ int _itemContainerEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  {
-    final value = object.description;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.description!.length * 3;
   bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.path.length * 3;
   return bytesCount;
@@ -103,7 +96,7 @@ ItemContainer _itemContainerDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = ItemContainer();
-  object.description = reader.readStringOrNull(offsets[0]);
+  object.description = reader.readString(offsets[0]);
   object.id = id;
   object.name = reader.readString(offsets[1]);
   object.path = reader.readString(offsets[2]);
@@ -118,7 +111,7 @@ P _itemContainerDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
@@ -230,26 +223,8 @@ extension ItemContainerQueryWhere
 extension ItemContainerQueryFilter
     on QueryBuilder<ItemContainer, ItemContainer, QFilterCondition> {
   QueryBuilder<ItemContainer, ItemContainer, QAfterFilterCondition>
-      descriptionIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'description',
-      ));
-    });
-  }
-
-  QueryBuilder<ItemContainer, ItemContainer, QAfterFilterCondition>
-      descriptionIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'description',
-      ));
-    });
-  }
-
-  QueryBuilder<ItemContainer, ItemContainer, QAfterFilterCondition>
       descriptionEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -263,7 +238,7 @@ extension ItemContainerQueryFilter
 
   QueryBuilder<ItemContainer, ItemContainer, QAfterFilterCondition>
       descriptionGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -279,7 +254,7 @@ extension ItemContainerQueryFilter
 
   QueryBuilder<ItemContainer, ItemContainer, QAfterFilterCondition>
       descriptionLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -295,8 +270,8 @@ extension ItemContainerQueryFilter
 
   QueryBuilder<ItemContainer, ItemContainer, QAfterFilterCondition>
       descriptionBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -974,7 +949,7 @@ extension ItemContainerQueryProperty
     });
   }
 
-  QueryBuilder<ItemContainer, String?, QQueryOperations> descriptionProperty() {
+  QueryBuilder<ItemContainer, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
     });
@@ -1047,12 +1022,7 @@ int _itemEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  {
-    final value = object.description;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.description!.length * 3;
   bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.path.length * 3;
   return bytesCount;
@@ -1076,7 +1046,7 @@ Item _itemDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Item();
-  object.description = reader.readStringOrNull(offsets[0]);
+  object.description = reader.readString(offsets[0]);
   object.id = id;
   object.name = reader.readString(offsets[1]);
   object.path = reader.readString(offsets[2]);
@@ -1091,7 +1061,7 @@ P _itemDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
@@ -1106,12 +1076,12 @@ Id _itemGetId(Item object) {
 }
 
 List<IsarLinkBase<dynamic>> _itemGetLinks(Item object) {
-  return [object.containerLink];
+  return [object.parentLink];
 }
 
 void _itemAttach(IsarCollection<dynamic> col, Id id, Item object) {
   object.id = id;
-  object.containerLink
+  object.parentLink
       .attach(col, col.isar.collection<ItemContainer>(), r'containerLink', id);
 }
 
@@ -1191,24 +1161,8 @@ extension ItemQueryWhere on QueryBuilder<Item, Item, QWhereClause> {
 }
 
 extension ItemQueryFilter on QueryBuilder<Item, Item, QFilterCondition> {
-  QueryBuilder<Item, Item, QAfterFilterCondition> descriptionIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'description',
-      ));
-    });
-  }
-
-  QueryBuilder<Item, Item, QAfterFilterCondition> descriptionIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'description',
-      ));
-    });
-  }
-
   QueryBuilder<Item, Item, QAfterFilterCondition> descriptionEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1221,7 +1175,7 @@ extension ItemQueryFilter on QueryBuilder<Item, Item, QFilterCondition> {
   }
 
   QueryBuilder<Item, Item, QAfterFilterCondition> descriptionGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1236,7 +1190,7 @@ extension ItemQueryFilter on QueryBuilder<Item, Item, QFilterCondition> {
   }
 
   QueryBuilder<Item, Item, QAfterFilterCondition> descriptionLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1251,8 +1205,8 @@ extension ItemQueryFilter on QueryBuilder<Item, Item, QFilterCondition> {
   }
 
   QueryBuilder<Item, Item, QAfterFilterCondition> descriptionBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1781,7 +1735,7 @@ extension ItemQueryProperty on QueryBuilder<Item, Item, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Item, String?, QQueryOperations> descriptionProperty() {
+  QueryBuilder<Item, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
     });

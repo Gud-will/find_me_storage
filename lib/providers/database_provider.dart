@@ -7,10 +7,23 @@ class ItemContainerRepository {
 
   ItemContainerRepository(this.isar);
 
-  Future<void> addItemContainer(ItemContainer itemContainer) async {
-    await isar.writeTxn(() async {
-      await isar.itemContainers.put(itemContainer);
-    });
+  Future<void> addItemContainer(ItemContainer itemContainer,
+      {bool hasparent = false, int parentid = 0}) async {
+        late final container;
+    await isar.writeTxn(
+      () async {
+        if (hasparent) {
+          container = await isar.itemContainers.get(itemContainer.parentLink.value!.id);
+          if (container != null) {
+            container.subContainers.add(itemContainer);
+          }
+        }
+        await isar.itemContainers.put(itemContainer);
+        if(hasparent){
+          await container.subContainers.save();
+        }
+      },
+    );
   }
 
   Future<ItemContainer?> getItemContainer(int id) async {
@@ -29,20 +42,23 @@ class ItemContainerRepository {
     });
   }
 
+// int containerId,
   Future<void> addItemToContainer(int containerId, Item item) async {
-    final container = await isar.itemContainers.get(containerId);
-    if (container != null) {
-      item.containerLink.value = container;
-      await isar.writeTxn(() async {
+    await isar.writeTxn(() async {
+      final container = await isar.itemContainers.get(containerId);
+      if (container != null) {
+        container.items.add(item);
+        item.parentLink.value = container;
         await isar.items.put(item);
-      });
-    }
+        await container.items.save();
+      }
+    });
   }
 
   Future<List<ItemContainer>> getSubContainers(int parentId) async {
     final parentContainer = await isar.itemContainers.get(parentId);
     if (parentContainer != null) {
-      return await parentContainer.subContainers.toList();
+      return parentContainer.subContainers.toList();
     }
     return [];
   }
@@ -50,7 +66,7 @@ class ItemContainerRepository {
   Future<List<Item>> getItems(int containerId) async {
     final container = await isar.itemContainers.get(containerId);
     if (container != null) {
-      return await container.items.toList();
+      return container.items.toList();
     }
     return [];
   }

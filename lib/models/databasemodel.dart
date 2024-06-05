@@ -27,7 +27,7 @@ class Item {
   late String name;
   String? description;
 
-  final containerLink = IsarLink<ItemContainer>();
+  final parentLink = IsarLink<ItemContainer>();
 
   late String path;
 }
