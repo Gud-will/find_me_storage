@@ -1,4 +1,6 @@
+import 'package:find_me_storage/providers/listitemsprovider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/databasemodel.dart';
 import '../../providers/database_provider.dart';
@@ -7,8 +9,8 @@ import '../../utils/const.dart';
 class SlidingDialogBox extends StatefulWidget {
   final ItemContainerRepository itemContainerRepository;
   final String path;
-  final ItemContainer parentitemcontainer;
-  const SlidingDialogBox({super.key,required this.itemContainerRepository,required this.path,required this.parentitemcontainer,});
+  ItemContainer? parentitemcontainer;
+  SlidingDialogBox({super.key,required this.itemContainerRepository,required this.path,required this.parentitemcontainer,});
 
   @override
   State<SlidingDialogBox> createState() => _SlidingDialogBoxState();
@@ -16,13 +18,12 @@ class SlidingDialogBox extends StatefulWidget {
 
 class _SlidingDialogBoxState extends State<SlidingDialogBox> {
   final TextEditingController _itemname = TextEditingController();
-
   final TextEditingController _itemdescp = TextEditingController();
-
   bool _isitem = true;
-
   @override
   Widget build(BuildContext context) {
+    ListItemsProvider listItemsProvider = Provider.of<ListItemsProvider>(context);
+    ListContainerProvider listContainerProvider = Provider.of<ListContainerProvider>(context);
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: const BoxDecoration(
@@ -85,25 +86,29 @@ class _SlidingDialogBoxState extends State<SlidingDialogBox> {
                 onPressed: () async {
                   if(_isitem){
                     final item=Item()
-                    ..parentLink.value=widget.parentitemcontainer
                     ..name=_itemname.text
                     ..description=_itemdescp.text
-                    ..path="${widget.path}/${_itemname.text}";
-                    await widget.itemContainerRepository.addItemToContainer(widget.parentitemcontainer.id,item);
+                    ..path=widget.path;
+                    if(widget.parentitemcontainer!=null){
+                      item.parentLink.value=widget.parentitemcontainer;
+                    }
+                    await widget.itemContainerRepository.addItemToContainer(widget.parentitemcontainer?.id??-1,item);
+                    listItemsProvider.addItems(item);
                   }
                   else{
                     final item= ItemContainer()
                     ..name=_itemname.text
                     ..description=_itemdescp.text
-                    ..path="${widget.path}/${_itemname.text}";
-                    if(widget.parentitemcontainer.id>0){
+                    ..path=widget.path;
+                    if(widget.parentitemcontainer != null){
                       item.parentLink.value=widget.parentitemcontainer;
                     }
                     await widget.itemContainerRepository.addItemContainer(item);
+                    listContainerProvider.addItemContainer(item);
                   }
                   Navigator.pop(context,true);
                 },
-                child: Text("Done"))
+                child: const Text("Done"))
           ],
         ),
       ),

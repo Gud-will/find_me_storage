@@ -1,25 +1,26 @@
+import 'package:find_me_storage/providers/listitemsprovider.dart';
 import 'package:isar/isar.dart';
 
 import '../models/databasemodel.dart';
 
 class ItemContainerRepository {
   final Isar isar;
-
   ItemContainerRepository(this.isar);
 
   Future<void> addItemContainer(ItemContainer itemContainer,
       {bool hasparent = false, int parentid = 0}) async {
-        late final container;
+    late final container;
     await isar.writeTxn(
       () async {
         if (hasparent) {
-          container = await isar.itemContainers.get(itemContainer.parentLink.value!.id);
+          container =
+              await isar.itemContainers.get(itemContainer.parentLink.value!.id);
           if (container != null) {
             container.subContainers.add(itemContainer);
           }
         }
         await isar.itemContainers.put(itemContainer);
-        if(hasparent){
+        if (hasparent) {
           await container.subContainers.save();
         }
       },
@@ -42,17 +43,25 @@ class ItemContainerRepository {
     });
   }
 
-// int containerId,
-  Future<void> addItemToContainer(int containerId, Item item) async {
-    await isar.writeTxn(() async {
-      final container = await isar.itemContainers.get(containerId);
-      if (container != null) {
-        container.items.add(item);
-        item.parentLink.value = container;
+  Future<void> addItemToContainer(
+    int containerId,
+    Item item,
+  ) async {
+    if (item.path == "/") {
+      await isar.writeTxn(() async {
         await isar.items.put(item);
-        await container.items.save();
-      }
-    });
+      });
+    } else {
+      await isar.writeTxn(() async {
+        final container = await isar.itemContainers.get(containerId);
+        if (container != null) {
+          container.items.add(item);
+          item.parentLink.value = container;
+          await isar.items.put(item);
+          await container.items.save();
+        }
+      });
+    }
   }
 
   Future<List<ItemContainer>> getSubContainers(int parentId) async {
@@ -70,9 +79,12 @@ class ItemContainerRepository {
     }
     return [];
   }
-
-  Future<List<ItemContainer>> getRootContainers() async {
-    // Query containers where parentLink is empty (i.e., root containers)
-    return await isar.itemContainers.filter().parentLinkIsNull().findAll();
+  Future<List<ItemContainer>> getContainersThroughPath(String path) async {
+    return await isar.itemContainers.filter().pathEqualTo(path).findAll();
+    // return await isar.itemContainers.filter().parentLinkIsNull().findAll();
+  }
+  Future<List<Item>> getItemsThroughPath(String path) async {
+    return await isar.items.filter().pathEqualTo(path).findAll();
+    // return await isar.itemContainers.filter().parentLinkIsNull().findAll();
   }
 }
