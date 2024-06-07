@@ -4,7 +4,7 @@ import 'package:find_me_storage/models/databasemodel.dart';
 
 class ItemContainerCard extends StatelessWidget {
   final ItemContainer itemContainer;
-  final Function(String, ItemContainer) ontap;
+  final Function(String, ItemContainer?) ontap;
   const ItemContainerCard(
       {super.key, required this.itemContainer, required this.ontap});
 

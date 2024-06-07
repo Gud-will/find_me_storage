@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
       themeProvider = Provider.of<ThemeProvider>(context);
       listItemsProvider.getListItems(widget.path);
       listContainerProvider.getListContainers(widget.path);
-      _isdone=!_isdone;
+      _isdone = !_isdone;
     }
   }
 
@@ -68,12 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
     listContainerProvider.getListContainers(widget.path);
   }
 
-  void ontap(String path, ItemContainer itemContainer) {
+  void ontap(String path, ItemContainer? itemContainer) {
     String temppath = "/";
-    if (itemContainer.path == temppath) {
-      temppath = temppath + itemContainer.name;
-    } else {
-      temppath = "${itemContainer.path}/${itemContainer.name}";
+    if (itemContainer != null) {
+      if (itemContainer.path == temppath) {
+        temppath = temppath + itemContainer.name;
+      } else {
+        temppath = "${itemContainer.path}/${itemContainer.name}";
+      }
     }
     widget.path = temppath;
     widget.parentContainer = itemContainer;
@@ -86,7 +88,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: MyDrawer(themeProvider: themeProvider,),
+      drawer: MyDrawer(
+        themeProvider: themeProvider,
+      ),
       body: SafeArea(
         child: Padding(
           padding: appPadding,
@@ -111,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               MySearchBar(
                 itemContainerRepository: widget.itemContainerRepository,
+                ontap: ontap,
               ),
               const Padding(
                 padding: EdgeInsets.all(5.0),

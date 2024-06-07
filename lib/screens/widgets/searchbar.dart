@@ -6,7 +6,9 @@ import '../../models/databasemodel.dart';
 
 class MySearchBar extends StatefulWidget {
   final ItemContainerRepository itemContainerRepository;
-  const MySearchBar({super.key, required this.itemContainerRepository});
+  final Function(String, ItemContainer?) ontap;
+  const MySearchBar(
+      {super.key, required this.itemContainerRepository, required this.ontap});
 
   @override
   State<MySearchBar> createState() => _MySearchBarState();
@@ -14,6 +16,7 @@ class MySearchBar extends StatefulWidget {
 
 class _MySearchBarState extends State<MySearchBar> {
   final TextEditingController _controller = TextEditingController();
+  final focus = FocusNode();
   List<dynamic> _suggestions = [];
   Widget searchChild(x) {
     return ListTile(
@@ -31,19 +34,26 @@ class _MySearchBarState extends State<MySearchBar> {
     final items =
         await widget.itemContainerRepository.getItemsThroughQuery(query);
     _suggestions = [...containers, ...items];
-    setState(() {
-      
-    });
+    setState(() {});
+  }
+
+  @override
+  void dispose(){
+    super.dispose();
+    _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SearchField(
+      itemHeight: 50,
+      focusNode: focus,
+      maxSuggestionsInViewPort: 5,
       emptyWidget: const Text("No item/Containers Found"),
       controller: _controller,
       suggestionDirection: SuggestionDirection.down,
       onTapOutside: (p0) {
-        Focus.of(context).unfocus();
+        focus.unfocus();
       },
       hint: "Search By Name or Description",
       suggestions: _suggestions.map((e) {
@@ -58,6 +68,7 @@ class _MySearchBarState extends State<MySearchBar> {
         }
         return SearchFieldListItem<dynamic>(
           displayValue,
+          item: e,
           child: searchChild(e),
         );
       }).toList(),
@@ -76,56 +87,36 @@ class _MySearchBarState extends State<MySearchBar> {
           }
           return SearchFieldListItem<dynamic>(
             displayValue,
+            item: e,
             child: searchChild(e),
           );
         }).toList();
+      },
+      onSuggestionTap: (SearchFieldListItem<dynamic> selected) async {
+        ItemContainer? parentitemcontainer;
+        final selectedItem = selected.item;
+        String temppath = "/";
+        temppath = selectedItem.path;
+        if (temppath == "/") {
+          temppath = "/";
+          parentitemcontainer = null;
+        } else {
+          parentitemcontainer = await widget.itemContainerRepository
+              .getItemContainer(selectedItem.parentLink.value!.id);
+        }
+        widget.ontap(selectedItem.path, parentitemcontainer);
+        setState(() {
+          _controller.clear();
+          focus.unfocus();
+        });
+      },
+      onSubmit: (p0) {
+        focus.unfocus();
       },
       onTap: () async {
         await _updateSuggestions(_controller.value.text);
         setState(() {});
       },
     );
-    // Scaffold(
-    //   appBar: AppBar(
-    //     title: Text('Search Example'),
-    //   ),
-    //   body: Padding(
-    //     padding: const EdgeInsets.all(16.0),
-    //     child: Column(
-    //       children: [
-    //         TextField(
-    //           controller: _controller,
-    //           decoration: InputDecoration(
-    //             hintText: 'Search by name or description',
-    //           ),
-    //           onChanged:
-    //         ),
-    //         Expanded(
-    //           child: ListView.builder(
-    //             itemCount: _suggestions.length,
-    //             itemBuilder: (context, index) {
-    //               final suggestion = _suggestions[index];
-    //               final isContainer = suggestion is ItemContainer;
-    //               final name = isContainer
-    //                   ? suggestion.name
-    //                   : (suggestion as Item).name;
-    //               final description = isContainer
-    //                   ? suggestion.description
-    //                   : (suggestion as Item).description;
-
-    //               return ListTile(
-    //                 title: Text(name),
-    //                 subtitle: Text(description ?? ''),
-    //                 onTap: () {
-    //                   // Handle tap on suggestion
-    //                 },
-    //               );
-    //             },
-    //           ),
-    //         ),
-    //       ],
-    //     ),
-    //   ),
-    // );
   }
 }

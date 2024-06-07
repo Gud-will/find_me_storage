@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:find_me_storage/providers/listitemsprovider.dart';
 import 'package:find_me_storage/screens/widgets/animatedtextswitcher.dart';
 import 'package:flutter/material.dart';
