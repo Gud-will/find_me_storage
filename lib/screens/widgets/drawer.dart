@@ -29,7 +29,6 @@ class MyDrawer extends StatelessWidget {
                 text2: "Dark Mode \u{1F31C}",
                 toggleisitem: toggletheme,
                 isitem: islighttheme),
-            onTap: () {},
           ),
         ],
       ),

@@ -2,6 +2,8 @@ import 'package:find_me_storage/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:searchfield/searchfield.dart';
 
+import '../../models/databasemodel.dart';
+
 class MySearchBar extends StatefulWidget {
   final ItemContainerRepository itemContainerRepository;
   const MySearchBar({super.key, required this.itemContainerRepository});
@@ -14,45 +16,75 @@ class _MySearchBarState extends State<MySearchBar> {
   final TextEditingController _controller = TextEditingController();
   List<dynamic> _suggestions = [];
   Widget searchChild(x) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12),
-      child: Text("${x.name}\\${x.description}",
-          style: const TextStyle(fontSize: 18, color: Colors.black)),
+    return ListTile(
+      title: Text(x.name),
+      subtitle: Text(x.description),
     );
   }
 
-  void _updateSuggestions(String query) async {
+  Future<void> _updateSuggestions(String query) async {
     if (query.isEmpty) {
-      setState(() {
-        _suggestions.clear();
-      });
+      _suggestions.clear();
     }
     final containers =
         await widget.itemContainerRepository.getContainersThroughQuery(query);
     final items =
         await widget.itemContainerRepository.getItemsThroughQuery(query);
+    _suggestions = [...containers, ...items];
     setState(() {
-      _suggestions = [...containers, ...items];
+      
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return SearchField(
-        emptyWidget: const Text("No item/Containers Found"),
-        controller: _controller,
-        suggestionDirection: SuggestionDirection.down,
-        onTapOutside: (p0) {
-          Focus.of(context).unfocus();
-        },
-        hint: "Search By Name or Description",
-        suggestions: _suggestions
-            .map((e) => SearchFieldListItem<dynamic>(e, child: searchChild(e)))
-            .toList(),
-        suggestionState: Suggestion.hidden,
-        onSearchTextChanged: (query) {
-          _updateSuggestions(query);
-        });
+      emptyWidget: const Text("No item/Containers Found"),
+      controller: _controller,
+      suggestionDirection: SuggestionDirection.down,
+      onTapOutside: (p0) {
+        Focus.of(context).unfocus();
+      },
+      hint: "Search By Name or Description",
+      suggestions: _suggestions.map((e) {
+        print("Check Check Check" + e.name);
+        String displayValue;
+        if (e is ItemContainer) {
+          displayValue = e.name;
+        } else if (e is Item) {
+          displayValue = e.name;
+        } else {
+          displayValue = 'Unknown';
+        }
+        return SearchFieldListItem<dynamic>(
+          displayValue,
+          child: searchChild(e),
+        );
+      }).toList(),
+      suggestionState: Suggestion.expand,
+      onSearchTextChanged: (query) {
+        _updateSuggestions(_controller.value.text);
+        return _suggestions.map((e) {
+          print("Check Check Check" + e.name);
+          String displayValue;
+          if (e is ItemContainer) {
+            displayValue = e.name;
+          } else if (e is Item) {
+            displayValue = e.name;
+          } else {
+            displayValue = 'Unknown';
+          }
+          return SearchFieldListItem<dynamic>(
+            displayValue,
+            child: searchChild(e),
+          );
+        }).toList();
+      },
+      onTap: () async {
+        await _updateSuggestions(_controller.value.text);
+        setState(() {});
+      },
+    );
     // Scaffold(
     //   appBar: AppBar(
     //     title: Text('Search Example'),
