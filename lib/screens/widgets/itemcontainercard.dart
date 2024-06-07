@@ -4,25 +4,16 @@ import 'package:find_me_storage/models/databasemodel.dart';
 
 class ItemContainerCard extends StatelessWidget {
   final ItemContainer itemContainer;
-  final Function ontap;
+  final Function(String, ItemContainer) ontap;
   const ItemContainerCard(
       {super.key, required this.itemContainer, required this.ontap});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
-        String temppath="/";
-        if(itemContainer.path==temppath){
-          temppath=temppath+itemContainer.name;
-        }
-        else{
-          temppath="${itemContainer.path}/${itemContainer.name}";
-        }
-        ontap(temppath,itemContainer);
-        print("Hello world");
-      },
+      onTap: () => ontap(itemContainer.path, itemContainer),
       title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(itemContainer.name),
           Text.rich(

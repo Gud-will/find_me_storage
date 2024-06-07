@@ -1,4 +1,3 @@
-import 'package:find_me_storage/providers/listitemsprovider.dart';
 import 'package:isar/isar.dart';
 
 import '../models/databasemodel.dart';
@@ -20,6 +19,7 @@ class ItemContainerRepository {
           }
         }
         await isar.itemContainers.put(itemContainer);
+        await itemContainer.parentLink.save();
         if (hasparent) {
           await container.subContainers.save();
         }
@@ -34,6 +34,9 @@ class ItemContainerRepository {
   Future<void> updateItemContainer(ItemContainer itemContainer) async {
     await isar.writeTxn(() async {
       await isar.itemContainers.put(itemContainer);
+      await itemContainer.items.save();
+      await itemContainer.parentLink.save();
+      await itemContainer.subContainers.save();
     });
   }
 
@@ -58,6 +61,7 @@ class ItemContainerRepository {
           container.items.add(item);
           item.parentLink.value = container;
           await isar.items.put(item);
+          await item.parentLink.save();
           await container.items.save();
         }
       });
@@ -87,4 +91,24 @@ class ItemContainerRepository {
     return await isar.items.filter().pathEqualTo(path).findAll();
     // return await isar.itemContainers.filter().parentLinkIsNull().findAll();
   }
+
+  Future<List<ItemContainer>> getContainersThroughQuery(String query) async {
+    return await isar.itemContainers
+        .filter()
+        .nameContains(query, caseSensitive: false)
+        .or()
+        .descriptionContains(query, caseSensitive: false)
+        .findAll();
+    // return await isar.itemContainers.filter().parentLinkIsNull().findAll();
+  }
+  Future<List<Item>> getItemsThroughQuery(String query) async {
+    return await isar.items
+        .filter()
+        .nameContains(query, caseSensitive: false)
+        .or()
+        .descriptionContains(query, caseSensitive: false)
+        .findAll();
+    // return await isar.itemContainers.filter().parentLinkIsNull().findAll();
+  }
+
 }

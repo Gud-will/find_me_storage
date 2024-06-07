@@ -17,7 +17,12 @@ class ThemeProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-
+  bool islighttheme(){
+    if(_themeData==lightTheme){
+      return true;
+    }
+    return false;
+  }
   void setTheme(ThemeData themeData) {
     _themeData = themeData;
     notifyListeners();

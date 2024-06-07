@@ -21,7 +21,7 @@ class ListItemsProvider extends ChangeNotifier {
   void getListItems(String currentpath)async{
     // print(currentpath);
     rootItems=await itemContainerRepository.getItemsThroughPath(currentpath);
-    // print(rootItems.length);
+    print(rootItems.length);
     notifyListeners();
   }
 }
